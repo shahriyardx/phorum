@@ -1,9 +1,9 @@
 'use client'
 
+import z from 'zod'
 import { SignupForm } from '@/components/signup-form'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import z from 'zod'
 import { authClient } from '@/lib/auth-client'
 import { useRouter } from 'next/navigation'
 
@@ -45,7 +45,7 @@ export default function Page() {
   }
 
   return (
-    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
+    <div className="flex w-full items-center justify-center p-10">
       <div className="w-full max-w-sm">
         <SignupForm form={form} submitHandler={handleSignUp} />
       </div>

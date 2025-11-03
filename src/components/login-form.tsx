@@ -25,6 +25,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
+import GoogleSignIn from './google-sign-in'
 
 export function LoginForm({
   form,
@@ -77,9 +78,7 @@ export function LoginForm({
 
                 <Field>
                   <Button type="submit">Login</Button>
-                  <Button variant="outline" type="button">
-                    Login with Google
-                  </Button>
+                  <GoogleSignIn />
                   <FieldDescription className="text-center">
                     Don&apos;t have an account?{' '}
                     <Link href="/auth/signup">Sign up</Link>

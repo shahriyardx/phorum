@@ -24,6 +24,7 @@ import {
 import { Input } from '@/components/ui/input'
 import type { UseFormReturn } from 'react-hook-form'
 import type { SignUp } from '@/app/auth/signup/page'
+import GoogleSignIn from './google-sign-in'
 
 export function SignupForm({
   form,
@@ -101,9 +102,7 @@ export function SignupForm({
               <FieldGroup>
                 <Field>
                   <Button type="submit">Create Account</Button>
-                  <Button variant="outline" type="button">
-                    Sign up with Google
-                  </Button>
+                  <GoogleSignIn />
                   <FieldDescription className="px-6 text-center">
                     Already have an account?{' '}
                     <Link href="/auth/signin">Sign in</Link>
