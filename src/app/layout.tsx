@@ -28,8 +28,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased dark`}
       >
-        <Header />
-        <main className="h-svh overflow-y-auto pt-16">{children}</main>
+        <main className="h-svh overflow-y-auto">{children}</main>
       </body>
     </html>
   )

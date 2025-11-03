@@ -1,11 +1,15 @@
 import type { ComponentProps } from 'react'
 import Sidebar from './sidebar'
+import Header from './header'
 
 const ForumLayout = ({ children }: ComponentProps<'div'>) => {
   return (
-    <div className="h-full grid grid-cols-[300px_auto]">
-      <Sidebar />
-      <div>{children}</div>
+    <div className="min-h-screen">
+      <Header />
+      <div className="flex">
+        <Sidebar />
+        <div className="flex-1">{children}</div>
+      </div>
     </div>
   )
 }

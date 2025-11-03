@@ -18,7 +18,7 @@ const Sidebar = () => {
   const activeTopicId = params.get('topic') || '1'
 
   return (
-    <div className="p-5 bg-zinc-900 border-r">
+    <aside className="w-72 p-5 bg-zinc-900 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto">
       <h1 className="text-lg font-bold">Topics</h1>
       <ul className="mt-2">
         {topics.map((topic) => (
@@ -35,7 +35,7 @@ const Sidebar = () => {
           </Link>
         ))}
       </ul>
-    </div>
+    </aside>
   )
 }
 
