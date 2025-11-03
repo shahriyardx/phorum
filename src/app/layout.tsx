@@ -29,7 +29,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased dark`}
       >
         <Header />
-        {children}
+        <main className="h-svh overflow-y-auto pt-16">{children}</main>
       </body>
     </html>
   )

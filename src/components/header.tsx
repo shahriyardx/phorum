@@ -8,12 +8,6 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuPortal,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { authClient } from '@/lib/auth-client'
@@ -24,7 +18,7 @@ const Header = () => {
   const router = useRouter()
 
   return (
-    <div className="p-5 bg-zinc-900">
+    <div className="p-5 bg-zinc-900 fixed w-full top-0 left-0 z-10 border-b">
       <div className="grid grid-cols-3">
         <Link href={'/'} className="font-bold">
           <span className="text-purple-500">PH</span>
