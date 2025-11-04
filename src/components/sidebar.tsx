@@ -2,9 +2,7 @@
 
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import React from 'react'
-import { emoji } from 'zod'
+import { usePathname, useSearchParams } from 'next/navigation'
 
 export const topics = [
   { id: '1', name: 'Misc', emoji: '∞' },

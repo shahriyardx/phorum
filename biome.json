@@ -28,7 +28,7 @@
         "noUnknownAtRules": "off"
       },
       "correctness": {
-        "noUnusedImports": "off"
+        "noUnusedImports": "error"
       }
     },
     "domains": {

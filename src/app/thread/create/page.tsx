@@ -3,7 +3,6 @@
 import ForumLayout from '@/components/forum-layout'
 import ThreadForm from '@/components/thread-form'
 import { Form } from '@/components/ui/form'
-import { prisma } from '@/lib/db'
 import { ThreadSchema, type ThreadType } from '@/schema/thread'
 import { trpc } from '@/trpc/client'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -11,7 +10,6 @@ import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
-import type z from 'zod'
 
 const Page = () => {
   const { mutate } = trpc.thread.create.useMutation({

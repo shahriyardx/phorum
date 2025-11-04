@@ -1,10 +1,8 @@
 'use client'
 
-import React from 'react'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 
 import {
-  Form,
   FormControl,
   FormDescription,
   FormField,
@@ -12,9 +10,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { topics } from './sidebar'
 import { cn } from '@/lib/utils'
-import { Check } from 'lucide-react'
 import type { UseFormReturn } from 'react-hook-form'
 import { Button } from './ui/button'
 import { Input } from './ui/input'

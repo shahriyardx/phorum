@@ -1,4 +1,3 @@
-import { z } from 'zod'
 import { baseProcedure, createTRPCRouter } from '../init'
 
 export const categoryRouter = createTRPCRouter({

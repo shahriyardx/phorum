@@ -18,7 +18,7 @@ function getQueryClient() {
   }
   // Browser: use singleton pattern to keep the same query client
   // biome-ignore lint/suspicious/noAssignInExpressions: Not required
-    return (clientQueryClientSingleton ??= makeQueryClient())
+  return (clientQueryClientSingleton ??= makeQueryClient())
 }
 function getUrl() {
   const base = (() => {
