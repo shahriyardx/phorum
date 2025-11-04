@@ -2,7 +2,7 @@ import { useContext } from 'react'
 import {
   SessionContext,
   type UserSessionResult,
-} from '@/providers/SessionProvider'
+} from '@/app/providers/SessionProvider'
 
 const useSession = () => {
   const session = useContext(SessionContext) as UserSessionResult
