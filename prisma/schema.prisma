@@ -13,7 +13,6 @@ generator zod {
   provider = "zod-prisma-types"
   output   = "../src/generated/zod"
 }
- 
 
 datasource db {
   provider = "postgresql"
@@ -30,6 +29,7 @@ model User {
   updatedAt     DateTime  @default(now()) @updatedAt
   sessions      Session[]
   accounts      Account[]
+  threads       Thread[]
 
   @@unique([email])
   @@map("user")
@@ -78,4 +78,31 @@ model Verification {
   updatedAt  DateTime @default(now()) @updatedAt
 
   @@map("verification")
+}
+
+model Category {
+  id      String   @id @default(cuid())
+  name    String
+  emoji   String
+  threads Thread[]
+}
+
+model Thread {
+  id         String  @id @default(cuid())
+  title      String
+  brief      String
+  content    String
+  isFlagged  Boolean @default(false)
+  flagReason String?
+
+  categoryId String
+  userId     String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  author   User     @relation(fields: [userId], references: [id])
+  Category Category @relation(fields: [categoryId], references: [id])
+
+  @@map("thread")
 }
