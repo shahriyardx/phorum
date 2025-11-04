@@ -31,9 +31,18 @@ export const createCallerFactory = t.createCallerFactory
 export const baseProcedure = t.procedure
 
 const isAuthed = t.middleware(({ ctx, next }) => {
-  if (!ctx.session) throw new TRPCError({ code: 'UNAUTHORIZED' })
+  if (!ctx.session)
+    throw new TRPCError({
+      code: 'UNAUTHORIZED',
+      message: 'You are not logged in',
+    })
 
-  return next({ ctx })
+  return next({
+    ctx: {
+      ...ctx,
+      session: ctx.session,
+    },
+  })
 })
 
 export const protectedProcedure = t.procedure.use(isAuthed)

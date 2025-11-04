@@ -31,7 +31,7 @@ const Header = () => {
               <Link href="/">Forum</Link>
             </li>
             <li>
-              <Link href="/create">Create</Link>
+              <Link href="/thread/create">Create</Link>
             </li>
           </ul>
         </div>

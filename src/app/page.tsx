@@ -8,7 +8,7 @@ import { PlusIcon } from 'lucide-react'
 const Home = () => {
   return (
     <ForumLayout>
-      <div className="p-8 pb-20">
+      <div className="pb-20">
         <div>
           <h1 className="text-4xl font-bold">
             Welcome to <span className="text-primary">PHorum</span>

@@ -8,7 +8,7 @@ const ForumLayout = ({ children }: ComponentProps<'div'>) => {
       <Header />
       <div className="flex">
         <Sidebar />
-        <div className="flex-1">{children}</div>
+        <div className="flex-1 p-8 container mx-auto">{children}</div>
       </div>
     </div>
   )
