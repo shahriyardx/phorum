@@ -1,12 +1,17 @@
-import 'server-only' // <-- ensure this file cannot be imported from the client
+import 'server-only'
 import { createHydrationHelpers } from '@trpc/react-query/rsc'
-import { cache } from 'react'
+import { headers } from 'next/headers'
 import { createCallerFactory, createTRPCContext } from './init'
 import { makeQueryClient } from './query-client'
 import { appRouter } from './routers/_app'
 
-export const getQueryClient = cache(makeQueryClient)
-const caller = createCallerFactory(appRouter)(createTRPCContext)
+export const getQueryClient = makeQueryClient
+
+export const caller = createCallerFactory(appRouter)(async () =>
+  // biome-ignore lint/suspicious/noExplicitAny: N/A
+  createTRPCContext({ req: { headers: headers() } as any }),
+)
+
 export const { trpc, HydrateClient } = createHydrationHelpers<typeof appRouter>(
   caller,
   getQueryClient,

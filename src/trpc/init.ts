@@ -1,21 +1,39 @@
+import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-import { initTRPC } from '@trpc/server'
-import { cache } from 'react'
+import { initTRPC, TRPCError } from '@trpc/server'
+import type { Session, User } from 'better-auth'
 
-export const createTRPCContext = cache(async () => {
-  return { prisma: prisma }
-})
-// Avoid exporting the entire t-object
-// since it's not very descriptive.
-// For instance, the use of a t variable
-// is common in i18n libraries.
-const t = initTRPC.create({
-  /**
-   * @see https://trpc.io/docs/server/data-transformers
-   */
-  // transformer: superjson,
-})
-// Base router and procedure helpers
+export type TRPCContext = {
+  prisma: typeof prisma
+  session: {
+    user: User
+    session: Session
+  } | null
+}
+
+export async function createTRPCContext(opts: {
+  req: Request
+}): Promise<TRPCContext> {
+  const authSession = await auth.api.getSession({
+    headers: opts.req.headers,
+  })
+
+  return {
+    prisma,
+    session: authSession,
+  }
+}
+
+const t = initTRPC.context<TRPCContext>().create()
+
 export const createTRPCRouter = t.router
 export const createCallerFactory = t.createCallerFactory
 export const baseProcedure = t.procedure
+
+const isAuthed = t.middleware(({ ctx, next }) => {
+  if (!ctx.session) throw new TRPCError({ code: 'UNAUTHORIZED' })
+
+  return next({ ctx })
+})
+
+export const protectedProcedure = t.procedure.use(isAuthed)
