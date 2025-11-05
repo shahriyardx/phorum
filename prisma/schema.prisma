@@ -30,6 +30,7 @@ model User {
   sessions      Session[]
   accounts      Account[]
   threads       Thread[]
+  comments      Comment[]
 
   @@unique([email])
   @@map("user")
@@ -101,8 +102,32 @@ model Thread {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
-  author   User     @relation(fields: [userId], references: [id])
-  Category Category @relation(fields: [categoryId], references: [id])
+  author   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Category Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  comments Comment[]
 
   @@map("thread")
+}
+
+model Comment {
+  id      String @id @default(cuid())
+  content String
+
+  threadId String
+  userId   String
+  parentId String?
+
+  isFlagged  Boolean @default(false)
+  flagReason String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  // relations
+  thread  Thread    @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  author  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent  Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies Comment[] @relation("CommentReplies")
+
+  @@map("comment")
 }

@@ -1,5 +1,6 @@
 'use client'
 
+import CommentCard from '@/components/comment'
 import CommentForm from '@/components/comment-form'
 import ForumLayout from '@/components/forum-layout'
 import MarkdownRenderer from '@/components/markdown-renderer'
@@ -21,7 +22,10 @@ const Page = () => {
   const { data, isLoading } = trpc.thread.getDetailsById.useQuery({
     id,
   })
-
+  const { data: comments, isLoading: commentsIsLoading } =
+    trpc.comment.topLevelComments.useQuery({
+      threadId: id,
+    })
   const [showSummary, setShowSummary] = useState(false)
 
   return (
@@ -106,6 +110,14 @@ const Page = () => {
               <MarkdownRenderer content={data.content} />
             </div>
 
+            <div className="mt-10">
+              <h2 className="text-2xl font-bold">Comments</h2>
+              <div className="mt-2">
+                {comments?.map((comment) => (
+                  <CommentCard key={comment.id} comment={comment} />
+                ))}
+              </div>
+            </div>
             <div className="mt-10">
               <div>
                 <CommentForm threadId={id} />
