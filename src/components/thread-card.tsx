@@ -1,36 +1,34 @@
 'use client'
 
-import React from 'react'
+import type { Category, Thread, User } from '@/generated/zod'
 import { Badge } from './ui/badge'
 import { EyeIcon, MessageCircleIcon } from 'lucide-react'
 import Link from 'next/link'
+import moment from 'moment'
 
-const ThreadCard = () => {
+const ThreadCard = ({
+  thread,
+}: {
+  thread: Thread & {
+    author: Pick<User, 'name'>
+    Category: Category
+  }
+}) => {
   return (
-    <Link href={'/thread/1'}>
+    <Link href={`/thread/${thread.id}`}>
       <div className="border-2 rounded-md p-10">
         <div className="flex items-start gap-2 justify-between">
-          <h1 className="flex-1 font-bold text-2xl">
-            Lorem ipsum dolor sit amet consectetur, adipisicing elit. A,
-            adipisci.
-          </h1>
+          <h1 className="flex-1 font-bold text-2xl">{thread.title}</h1>
 
           <Badge>Programming</Badge>
         </div>
 
-        <p className="mt-3">
-          Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quaerat
-          assumenda accusamus hic explicabo fugit impedit dignissimos atque
-          molestias, odio, cum quibusdam delectus aliquam perferendis quos quas
-          nemo totam, optio nam inventore! Quos vitae corrupti culpa dignissimos
-          optio qui nulla sed nihil modi dolore, harum deserunt incidunt
-          exercitationem porro iure id!
-        </p>
+        <p className="mt-3">{thread.brief}</p>
 
         <div className="flex justify-between items-center mt-5">
           <div className="flex items-center gap-5">
             <div className="text-muted-foreground">
-              by <span className="text-primary">Shahriyar</span>
+              by <span className="text-primary">{thread.author.name}</span>
             </div>
 
             <div className="flex items-center gap-2">
@@ -44,7 +42,7 @@ const ThreadCard = () => {
             </div>
           </div>
 
-          <div>4 Hours ago</div>
+          <div>{moment(thread.createdAt).fromNow()}</div>
         </div>
       </div>
     </Link>

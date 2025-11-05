@@ -1,4 +1,4 @@
-import { createTRPCRouter, protectedProcedure } from '../init'
+import { baseProcedure, createTRPCRouter, protectedProcedure } from '../init'
 import { ThreadSchema } from '@/schema/thread'
 
 export const threadRouter = createTRPCRouter({
@@ -13,4 +13,16 @@ export const threadRouter = createTRPCRouter({
         },
       })
     }),
+  allThreads: baseProcedure.query(async ({ ctx }) => {
+    return await ctx.prisma.thread.findMany({
+      include: {
+        Category: true,
+        author: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    })
+  }),
 })

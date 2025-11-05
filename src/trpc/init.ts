@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { initTRPC, TRPCError } from '@trpc/server'
 import type { Session, User } from 'better-auth'
+import superjson from 'superjson'
 
 export type TRPCContext = {
   prisma: typeof prisma
@@ -24,7 +25,9 @@ export async function createTRPCContext(opts: {
   }
 }
 
-const t = initTRPC.context<TRPCContext>().create()
+const t = initTRPC.context<TRPCContext>().create({
+  transformer: superjson,
+})
 
 export const createTRPCRouter = t.router
 export const createCallerFactory = t.createCallerFactory
