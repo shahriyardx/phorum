@@ -23,9 +23,11 @@ import type { ThreadType } from '@/schema/thread'
 const ThreadForm = ({
   form,
   handleSubmit,
+  update,
 }: {
   form: UseFormReturn<ThreadType>
   handleSubmit: (values: ThreadType) => void
+  update?: boolean
 }) => {
   const { data: categories } = trpc.category.allCategories.useQuery()
 
@@ -152,7 +154,7 @@ const ThreadForm = ({
             <Link href={'/'}>Cancel</Link>
           </Button>
 
-          <Button>Create Thread</Button>
+          <Button>{update ? 'Update' : 'Create'} Thread</Button>
         </div>
       </FieldGroup>
     </form>

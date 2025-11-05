@@ -1,7 +1,7 @@
-import { baseProcedure, createTRPCRouter } from '../init'
+import { createTRPCRouter, publicProcedure } from '../init'
 
 export const categoryRouter = createTRPCRouter({
-  allCategories: baseProcedure.query(async ({ ctx }) => {
+  allCategories: publicProcedure.query(async ({ ctx }) => {
     return await ctx.prisma.category.findMany()
   }),
 })

@@ -20,7 +20,7 @@ const ThreadCard = ({
         <div className="flex items-start gap-2 justify-between">
           <h1 className="flex-1 font-bold text-2xl">{thread.title}</h1>
 
-          <Badge>Programming</Badge>
+          <Badge>{thread.Category.name}</Badge>
         </div>
 
         <p className="mt-3">{thread.brief}</p>
