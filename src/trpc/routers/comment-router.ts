@@ -17,6 +17,11 @@ export const commentRouter = createTRPCRouter({
               email: true,
             },
           },
+          _count: {
+            select: {
+              replies: true,
+            },
+          },
         },
       })
     }),
@@ -33,6 +38,11 @@ export const commentRouter = createTRPCRouter({
             select: {
               name: true,
               email: true,
+            },
+          },
+          _count: {
+            select: {
+              replies: true,
             },
           },
         },

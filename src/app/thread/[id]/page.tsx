@@ -22,7 +22,7 @@ const Page = () => {
   const { data, isLoading } = trpc.thread.getDetailsById.useQuery({
     id,
   })
-  const { data: comments, isLoading: commentsIsLoading } =
+  const { data: comments } =
     trpc.comment.topLevelComments.useQuery({
       threadId: id,
     })

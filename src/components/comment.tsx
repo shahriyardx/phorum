@@ -3,19 +3,28 @@ import moment from 'moment'
 import Image from 'next/image'
 import { useState } from 'react'
 import CommentForm from './comment-form'
-import { PlusCircle } from 'lucide-react'
+import { MinusCircle, PlusCircle } from 'lucide-react'
 import { trpc } from '@/trpc/client'
 
-const CommentCard = ({
-  comment,
-}: {
-  comment: Comment & { author: Pick<User, 'name' | 'email'> }
-}) => {
+type Props = {
+  comment: Comment & {
+    author: Pick<User, 'name' | 'email'>
+    _count: {
+      replies: number
+    }
+  }
+}
+
+const CommentCard = ({ comment }: Props) => {
   const [showForm, setShowForm] = useState(false)
-  const { data: replies } = trpc.comment.commentReplies.useQuery({
-    parentId: comment.id,
-    threadId: comment.threadId,
-  })
+  const [showReplies, setShowReplies] = useState(false)
+  const { data: replies } = trpc.comment.commentReplies.useQuery(
+    {
+      parentId: comment.id,
+      threadId: comment.threadId,
+    },
+    { enabled: showReplies },
+  )
 
   return (
     <div className="flex items-start gap-3 border-l pl-5 pt-2">
@@ -45,13 +54,20 @@ const CommentCard = ({
               Reply
             </button>
 
-            <button
-              type="button"
-              className="text-muted-foreground hover:text-primary cursor-pointer flex items-center gap-1"
-            >
-              <PlusCircle size={15} />
-              View Replies
-            </button>
+            {comment._count.replies > 0 && (
+              <button
+                type="button"
+                onClick={() => setShowReplies(!showReplies)}
+                className="text-muted-foreground hover:text-primary cursor-pointer flex items-center gap-1"
+              >
+                {showReplies ? (
+                  <MinusCircle size={15} />
+                ) : (
+                  <PlusCircle size={15} />
+                )}
+                {showReplies ? 'Hide Replies' : 'View Replies'}
+              </button>
+            )}
           </div>
           {showForm && (
             <div className="mt-2">
@@ -64,11 +80,13 @@ const CommentCard = ({
             </div>
           )}
 
-          <div className="mt-5">
-            {replies?.map((reply) => (
-              <CommentCard key={reply.id} comment={reply} />
-            ))}
-          </div>
+          {showReplies && (
+            <div className="mt-2">
+              {replies?.map((reply) => (
+                <CommentCard key={reply.id} comment={reply} />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
