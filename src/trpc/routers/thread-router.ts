@@ -35,6 +35,23 @@ export const threadRouter = createTRPCRouter({
         },
       })
     }),
+  getDetailsById: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return await ctx.prisma.thread.findUnique({
+        where: {
+          id: input.id,
+        },
+        include: {
+          Category: true,
+          author: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      })
+    }),
   update: protectedProcedure
     .input(
       z.object({
