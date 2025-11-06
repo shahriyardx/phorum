@@ -1,3 +1,5 @@
+'use client'
+
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import z from 'zod'
@@ -14,6 +16,8 @@ import { Button } from './ui/button'
 import { SendIcon } from 'lucide-react'
 import { trpc } from '@/trpc/client'
 import { toast } from 'sonner'
+import type { Comment } from '@/generated/zod'
+import { Socket } from 'socket.io-client'
 
 const CommentSchema = z.object({
   content: z
@@ -27,11 +31,13 @@ const CommentForm = ({
   parentId,
   placeholder,
   onSuccess,
+  socket,
 }: {
   threadId: string
   parentId?: string
   placeholder?: string
-  onSuccess?: () => void
+  onSuccess?: (comment: Comment) => void
+  socket: Socket
 }) => {
   const form = useForm<z.infer<typeof CommentSchema>>({
     resolver: zodResolver(CommentSchema),
@@ -39,8 +45,16 @@ const CommentForm = ({
 
   const { mutate: comment, isPending: commentIsPending } =
     trpc.comment.createComment.useMutation({
-      onSuccess: () => {
+      onSuccess: (data) => {
         form.reset({ content: '' })
+        if (onSuccess) {
+          onSuccess(data)
+        }
+
+        socket.emit('message', {
+          room: data.threadId,
+          message: data,
+        })
       },
       onError: (e) => {
         toast.error(e.message)
@@ -48,9 +62,16 @@ const CommentForm = ({
     })
   const { mutate: reply, isPending: replyIsPending } =
     trpc.comment.createReply.useMutation({
-      onSuccess: () => {
+      onSuccess: (data) => {
         form.reset({ content: '' })
-        onSuccess?.()
+        if (onSuccess) {
+          onSuccess(data)
+        }
+
+        socket.emit('message', {
+          room: data.threadId,
+          message: data,
+        })
       },
       onError: (e) => {
         toast.error(e.message)

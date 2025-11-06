@@ -6,7 +6,9 @@ import ForumLayout from '@/components/forum-layout'
 import MarkdownRenderer from '@/components/markdown-renderer'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { socket } from '@/lib/socket'
 import { trpc } from '@/trpc/client'
+import type { Comment, User } from '@/generated/zod'
 import {
   ArrowLeft,
   EyeIcon,
@@ -15,18 +17,70 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 const Page = () => {
   const { id } = useParams<{ id: string }>()
   const { data, isLoading } = trpc.thread.getDetailsById.useQuery({
     id,
   })
-  const { data: comments } =
-    trpc.comment.topLevelComments.useQuery({
-      threadId: id,
-    })
+  const { data: commentsData } = trpc.comment.topLevelComments.useQuery({
+    threadId: id,
+  })
   const [showSummary, setShowSummary] = useState(false)
+  const [comments, setComments] = useState(commentsData || [])
+
+  useEffect(() => {
+    if (commentsData) {
+      setComments(commentsData)
+    }
+  }, [commentsData])
+
+  useEffect(() => {
+    socket.connect()
+
+    socket.on('connect', () => {
+      socket.emit('join', id)
+    })
+
+    socket.on(
+      'message',
+      ({
+        room,
+        message,
+      }: {
+        room: string
+        message: Comment & { author: Pick<User, 'name' | 'email'> }
+      }) => {
+        if (room !== id) return
+
+        if (!message.parentId) {
+          const newComments = [
+            ...comments,
+            {
+              ...message,
+              _count: {
+                replies: 0,
+              },
+            },
+          ]
+          setComments(newComments)
+        } else {
+          const newComments = comments.map((comment) =>
+            comment.id === message.parentId
+              ? { ...comment, _count: { replies: comment._count.replies + 1 } }
+              : comment,
+          )
+
+          setComments(newComments)
+        }
+      },
+    )
+
+    return () => {
+      socket.disconnect()
+    }
+  }, [id, comments])
 
   return (
     <ForumLayout>
@@ -111,16 +165,31 @@ const Page = () => {
             </div>
 
             <div className="mt-10">
-              <h2 className="text-2xl font-bold">Comments</h2>
+              <h2 className="text-2xl font-bold text-muted-foreground">
+                Comments
+              </h2>
               <div className="mt-2">
                 {comments?.map((comment) => (
-                  <CommentCard key={comment.id} comment={comment} />
+                  <CommentCard
+                    key={comment.id}
+                    comment={comment}
+                    socket={socket}
+                  />
                 ))}
               </div>
             </div>
             <div className="mt-10">
               <div>
-                <CommentForm threadId={id} />
+                <CommentForm
+                  socket={socket}
+                  threadId={id}
+                  onSuccess={(data) => {
+                    socket.emit('message', {
+                      room: id,
+                      message: data,
+                    })
+                  }}
+                />
               </div>
             </div>
           </div>

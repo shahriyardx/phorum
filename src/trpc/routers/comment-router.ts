@@ -62,6 +62,14 @@ export const commentRouter = createTRPCRouter({
           threadId: input.threadId,
           userId: ctx.session.user.id,
         },
+        include: {
+          author: {
+            select: {
+              name: true,
+              email: true,
+            },
+          },
+        },
       })
     }),
   createReply: protectedProcedure
@@ -79,6 +87,14 @@ export const commentRouter = createTRPCRouter({
           threadId: input.threadId,
           userId: ctx.session.user.id,
           parentId: input.parentId,
+        },
+        include: {
+          author: {
+            select: {
+              name: true,
+              email: true,
+            },
+          },
         },
       })
     }),
