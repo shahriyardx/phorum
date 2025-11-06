@@ -8,10 +8,11 @@ import { trpc } from '@/trpc/client'
 import useSession from '@/hooks/useSession'
 import type { Socket } from 'socket.io-client'
 import * as motion from 'motion/react-client'
+import type { SocketMessage } from '@/app/thread/[id]/page'
 
 type Props = {
   comment: Comment & {
-    author: Pick<User, 'name' | 'email'>
+    author: Pick<User, 'name' | 'email' | 'id'>
     _count: {
       replies: number
     }
@@ -19,10 +20,24 @@ type Props = {
   socket: Socket
 }
 
-const CommentCard = ({ comment, socket }: Props) => {
-  const { session: _session } = useSession()
+const CommentCard = ({ comment: commentData, socket }: Props) => {
+  const { user } = useSession()
   const [showForm, setShowForm] = useState(false)
   const [showReplies, setShowReplies] = useState(false)
+  const [comment, setComment] = useState(commentData)
+
+  const { mutate: deleteComment } = trpc.comment.deleteComment.useMutation({
+    onSuccess: () => {
+      socket.emit('message', {
+        room: comment.threadId,
+        type: 'deleteComment',
+        message: {
+          id: comment.id,
+          parentId: comment.parentId,
+        },
+      })
+    },
+  })
   const { data: repliesData, refetch } = trpc.comment.commentReplies.useQuery(
     {
       parentId: comment.id,
@@ -40,23 +55,37 @@ const CommentCard = ({ comment, socket }: Props) => {
   }, [repliesData])
 
   useEffect(() => {
-    socket.on(
-      'message',
-      ({
-        room,
-        message,
-      }: {
-        room: string
-        message: Comment & { author: Pick<User, 'name' | 'email'> }
-      }) => {
-        if (
-          room === comment.threadId &&
-          message.parentId === comment.parentId
-        ) {
-          setReplies([...replies, { ...message, _count: { replies: 0 } }])
+    socket.on('message', ({ room, type, message }: SocketMessage) => {
+      if (room !== comment.threadId) return
+      if (type === 'comment') {
+        if (!message.parentId) return
+        if (message.parentId === comment.id) {
+          const newReplies = [
+            ...replies,
+            {
+              ...message,
+              _count: {
+                replies: 0,
+              },
+            },
+          ]
+          setReplies(newReplies)
+          setComment({
+            ...comment,
+            _count: { replies: comment._count.replies + 1 },
+          })
         }
-      },
-    )
+      }
+
+      if (type === 'deleteComment') {
+        const oldComments = [...replies]
+        const newComments = oldComments.filter(
+          (comment) => comment.id !== message.id,
+        )
+
+        setReplies(newComments)
+      }
+    })
   }, [socket, replies, comment])
 
   const handleShowReplies = () => {
@@ -110,6 +139,16 @@ const CommentCard = ({ comment, socket }: Props) => {
                 {showReplies ? 'Hide Replies' : `View Replies`}
               </button>
             )}
+
+            {user && user.id === comment.userId && (
+              <button
+                type="button"
+                className="text-muted-foreground hover:text-red-500 cursor-pointer flex items-center gap-1"
+                onClick={() => deleteComment({ id: comment.id })}
+              >
+                delete
+              </button>
+            )}
           </div>
           {showForm && (
             <div className="mt-2">
@@ -120,6 +159,7 @@ const CommentCard = ({ comment, socket }: Props) => {
                 onSuccess={() => {
                   setShowForm(false)
                   setShowReplies(true)
+                  refetch()
                 }}
                 socket={socket}
               />

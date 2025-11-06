@@ -13,6 +13,7 @@ export const commentRouter = createTRPCRouter({
         include: {
           author: {
             select: {
+              id: true,
               name: true,
               email: true,
             },
@@ -36,6 +37,7 @@ export const commentRouter = createTRPCRouter({
         include: {
           author: {
             select: {
+              id: true,
               name: true,
               email: true,
             },
@@ -72,6 +74,28 @@ export const commentRouter = createTRPCRouter({
         },
       })
     }),
+  deleteComment: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const comment = await ctx.prisma.comment.findUnique({
+        where: {
+          id: input.id,
+        },
+      })
+      if (!comment) {
+        throw new Error('comment not found')
+      }
+
+      if (comment.userId !== ctx.session.user.id) {
+        throw new Error('you are not authorized to delete this comment')
+      }
+
+      return await ctx.prisma.comment.delete({
+        where: {
+          id: input.id,
+        },
+      })
+    }),
   createReply: protectedProcedure
     .input(
       z.object({
@@ -91,6 +115,7 @@ export const commentRouter = createTRPCRouter({
         include: {
           author: {
             select: {
+              id: true,
               name: true,
               email: true,
             },

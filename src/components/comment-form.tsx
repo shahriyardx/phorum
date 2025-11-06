@@ -17,7 +17,7 @@ import { SendIcon } from 'lucide-react'
 import { trpc } from '@/trpc/client'
 import { toast } from 'sonner'
 import type { Comment } from '@/generated/zod'
-import { Socket } from 'socket.io-client'
+import type { Socket } from 'socket.io-client'
 
 const CommentSchema = z.object({
   content: z
@@ -53,6 +53,7 @@ const CommentForm = ({
 
         socket.emit('message', {
           room: data.threadId,
+          type: 'comment',
           message: data,
         })
       },
@@ -70,6 +71,7 @@ const CommentForm = ({
 
         socket.emit('message', {
           room: data.threadId,
+          type: 'comment',
           message: data,
         })
       },

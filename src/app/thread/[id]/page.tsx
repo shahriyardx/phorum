@@ -19,6 +19,16 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
+export type SocketMessage = {
+  room: string
+} & (
+  | {
+      type: 'comment'
+      message: Comment & { author: Pick<User, 'name' | 'email' | 'id'> }
+    }
+  | { type: 'deleteComment'; message: Pick<Comment, 'id' | 'parentId'> }
+)
+
 const Page = () => {
   const { id } = useParams<{ id: string }>()
   const { data, isLoading } = trpc.thread.getDetailsById.useQuery({
@@ -43,17 +53,9 @@ const Page = () => {
       socket.emit('join', id)
     })
 
-    socket.on(
-      'message',
-      ({
-        room,
-        message,
-      }: {
-        room: string
-        message: Comment & { author: Pick<User, 'name' | 'email'> }
-      }) => {
-        if (room !== id) return
-
+    socket.on('message', ({ room, type, message }: SocketMessage) => {
+      if (room !== id) return
+      if (type === 'comment') {
         if (!message.parentId) {
           const newComments = [
             ...comments,
@@ -68,14 +70,26 @@ const Page = () => {
         } else {
           const newComments = comments.map((comment) =>
             comment.id === message.parentId
-              ? { ...comment, _count: { replies: comment._count.replies + 1 } }
+              ? {
+                  ...comment,
+                  _count: { replies: comment._count.replies + 1 },
+                }
               : comment,
           )
 
           setComments(newComments)
         }
-      },
-    )
+      }
+
+      if (type === 'deleteComment') {
+        const oldComments = [...comments]
+        const newComments = oldComments.filter(
+          (comment) => comment.id !== message.id,
+        )
+
+        setComments(newComments)
+      }
+    })
 
     return () => {
       socket.disconnect()
