@@ -32,12 +32,14 @@ const CommentForm = ({
   placeholder,
   onSuccess,
   socket,
+  shrink,
 }: {
   threadId: string
   parentId?: string
   placeholder?: string
   onSuccess?: (comment: Comment) => void
   socket: Socket
+  shrink?: boolean
 }) => {
   const form = useForm<z.infer<typeof CommentSchema>>({
     resolver: zodResolver(CommentSchema),
@@ -106,15 +108,17 @@ const CommentForm = ({
               <FormItem className="flex-1">
                 <FormControl>
                   <Textarea
-                    className="h-36"
+                    className={shrink ? 'h-auto' : 'h-64'}
                     placeholder={placeholder || 'write something cool here...'}
                     {...field}
                   />
                 </FormControl>
                 <FormMessage />
-                <FormDescription>
-                  Comments are being moderated by AI
-                </FormDescription>
+                {!shrink && (
+                  <FormDescription>
+                    Comments are being moderated by AI
+                  </FormDescription>
+                )}
               </FormItem>
             )}
           />

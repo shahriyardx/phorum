@@ -10,6 +10,9 @@ export const commentRouter = createTRPCRouter({
           threadId: input.threadId,
           parentId: null,
         },
+        orderBy: {
+          createdAt: 'asc',
+        },
         include: {
           author: {
             select: {
@@ -33,6 +36,9 @@ export const commentRouter = createTRPCRouter({
         where: {
           threadId: input.threadId,
           parentId: input.parentId,
+        },
+        orderBy: {
+          createdAt: 'asc',
         },
         include: {
           author: {

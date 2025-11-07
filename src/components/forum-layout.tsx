@@ -1,4 +1,4 @@
-import type { ComponentProps } from 'react'
+import { Suspense, type ComponentProps } from 'react'
 import Sidebar from './sidebar'
 import Header from './header'
 
@@ -7,7 +7,9 @@ const ForumLayout = ({ children }: ComponentProps<'div'>) => {
     <div className="min-h-screen">
       <Header />
       <div className="flex">
-        <Sidebar />
+        <Suspense fallback={<div>Loading...</div>}>
+          <Sidebar />
+        </Suspense>
         <div className="flex-1 p-8 container mx-auto">{children}</div>
       </div>
     </div>

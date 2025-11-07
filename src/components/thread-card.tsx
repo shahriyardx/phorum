@@ -2,7 +2,7 @@
 
 import type { Category, Thread, User } from '@/generated/zod'
 import { Badge } from './ui/badge'
-import { EyeIcon, MessageCircleIcon } from 'lucide-react'
+import { MessageCircleIcon } from 'lucide-react'
 import Link from 'next/link'
 import moment from 'moment'
 
@@ -12,6 +12,7 @@ const ThreadCard = ({
   thread: Thread & {
     author: Pick<User, 'name'>
     Category: Category
+    _count: { comments: number }
   }
 }) => {
   return (
@@ -33,12 +34,7 @@ const ThreadCard = ({
 
             <div className="flex items-center gap-2">
               <MessageCircleIcon size={18} className="text-muted-foreground" />
-              <span>24 Replies</span>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <EyeIcon size={20} className="text-muted-foreground" />
-              <span>2500 Views</span>
+              <span>{thread._count.comments} Replies</span>
             </div>
           </div>
 

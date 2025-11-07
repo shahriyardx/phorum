@@ -23,6 +23,11 @@ export const threadRouter = createTRPCRouter({
             name: true,
           },
         },
+        _count: {
+          select: {
+            comments: true,
+          },
+        },
       },
     })
   }),
@@ -49,9 +54,15 @@ export const threadRouter = createTRPCRouter({
               name: true,
             },
           },
+          _count: {
+            select: {
+              comments: true,
+            },
+          },
         },
       })
     }),
+
   update: protectedProcedure
     .input(
       z.object({

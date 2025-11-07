@@ -9,12 +9,7 @@ import { Button } from '@/components/ui/button'
 import { socket } from '@/lib/socket'
 import { trpc } from '@/trpc/client'
 import type { Comment, User } from '@/generated/zod'
-import {
-  ArrowLeft,
-  EyeIcon,
-  MessageCircleIcon,
-  SparklesIcon,
-} from 'lucide-react'
+import { ArrowLeft, MessageCircleIcon, SparklesIcon } from 'lucide-react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -31,7 +26,11 @@ export type SocketMessage = {
 
 const Page = () => {
   const { id } = useParams<{ id: string }>()
-  const { data, isLoading } = trpc.thread.getDetailsById.useQuery({
+  const {
+    data,
+    isLoading,
+    refetch: refetchThread,
+  } = trpc.thread.getDetailsById.useQuery({
     id,
   })
   const { data: commentsData } = trpc.comment.topLevelComments.useQuery({
@@ -50,51 +49,52 @@ const Page = () => {
     socket.connect()
 
     socket.on('connect', () => {
+      console.log('Connected to socket')
       socket.emit('join', id)
     })
 
     socket.on('message', ({ room, type, message }: SocketMessage) => {
       if (room !== id) return
       if (type === 'comment') {
+        if (message.threadId === id) {
+          console.log('refetching')
+          refetchThread()
+        }
+
         if (!message.parentId) {
-          const newComments = [
-            ...comments,
+          setComments((prev) => [
+            ...prev,
             {
               ...message,
               _count: {
                 replies: 0,
               },
             },
-          ]
-          setComments(newComments)
+          ])
         } else {
-          const newComments = comments.map((comment) =>
-            comment.id === message.parentId
-              ? {
-                  ...comment,
-                  _count: { replies: comment._count.replies + 1 },
-                }
-              : comment,
+          setComments((prev) =>
+            prev.map((comment) =>
+              comment.id === message.parentId
+                ? {
+                    ...comment,
+                    _count: { replies: comment._count.replies + 1 },
+                  }
+                : comment,
+            ),
           )
-
-          setComments(newComments)
         }
       }
 
       if (type === 'deleteComment') {
-        const oldComments = [...comments]
-        const newComments = oldComments.filter(
-          (comment) => comment.id !== message.id,
-        )
-
-        setComments(newComments)
+        setComments((prev) => prev.filter((c) => c.id !== message.id))
       }
     })
 
     return () => {
+      socket.emit('leave', id)
       socket.disconnect()
     }
-  }, [id, comments])
+  }, [id, refetchThread])
 
   return (
     <ForumLayout>
@@ -131,12 +131,7 @@ const Page = () => {
                     size={18}
                     className="text-muted-foreground"
                   />
-                  <span>24 Replies</span>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <EyeIcon size={20} className="text-muted-foreground" />
-                  <span>2500 Views</span>
+                  <span>{data._count.comments} Replies</span>
                 </div>
               </div>
             </div>

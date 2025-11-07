@@ -55,38 +55,40 @@ const CommentCard = ({ comment: commentData, socket }: Props) => {
   }, [repliesData])
 
   useEffect(() => {
-    socket.on('message', ({ room, type, message }: SocketMessage) => {
+    const handler = ({ room, type, message }: SocketMessage) => {
       if (room !== comment.threadId) return
+
       if (type === 'comment') {
         if (!message.parentId) return
         if (message.parentId === comment.id) {
-          const newReplies = [
-            ...replies,
+          setReplies((prev) => [
+            ...prev,
             {
               ...message,
-              _count: {
-                replies: 0,
-              },
+              _count: { replies: 0 },
             },
-          ]
-          setReplies(newReplies)
-          setComment({
-            ...comment,
-            _count: { replies: comment._count.replies + 1 },
-          })
+          ])
+
+          setComment((prev) => ({
+            ...prev,
+            _count: {
+              replies: prev._count.replies + 1,
+            },
+          }))
         }
       }
 
       if (type === 'deleteComment') {
-        const oldComments = [...replies]
-        const newComments = oldComments.filter(
-          (comment) => comment.id !== message.id,
-        )
-
-        setReplies(newComments)
+        setReplies((prev) => prev.filter((c) => c.id !== message.id))
       }
-    })
-  }, [socket, replies, comment])
+    }
+
+    socket.on('message', handler)
+
+    return () => {
+      socket.off('message', handler)
+    }
+  }, [socket, comment.threadId, comment.id])
 
   const handleShowReplies = () => {
     setShowReplies(!showReplies)
@@ -162,6 +164,7 @@ const CommentCard = ({ comment: commentData, socket }: Props) => {
                   refetch()
                 }}
                 socket={socket}
+                shrink
               />
             </div>
           )}
