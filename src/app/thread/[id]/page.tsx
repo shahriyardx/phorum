@@ -9,7 +9,13 @@ import { Button } from '@/components/ui/button'
 import { socket } from '@/lib/socket'
 import { trpc } from '@/trpc/client'
 import type { Comment, User } from '@/generated/zod'
-import { ArrowLeft, MessageCircleIcon, SparklesIcon } from 'lucide-react'
+import {
+  ArrowLeft,
+  Loader2,
+  MessageCircleIcon,
+  RefreshCcw,
+  SparklesIcon,
+} from 'lucide-react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -38,6 +44,13 @@ const Page = () => {
   })
   const [showSummary, setShowSummary] = useState(false)
   const [comments, setComments] = useState(commentsData || [])
+  const [summary, setSummary] = useState<string | null>(null)
+  const { mutate, isPending } = trpc.thread.getAiSummary.useMutation({
+    onSuccess: (data) => {
+      setShowSummary(true)
+      setSummary(data.summary)
+    },
+  })
 
   useEffect(() => {
     if (commentsData) {
@@ -137,33 +150,48 @@ const Page = () => {
             </div>
 
             <div className="py-5">
-              <Button
-                disabled={showSummary}
-                onClick={() => setShowSummary(true)}
-              >
-                <SparklesIcon /> Generate AI Summary
-              </Button>
+              {!summary && (
+                <Button disabled={isPending} onClick={() => mutate({ id })}>
+                  {isPending ? (
+                    <Loader2 className="animate-spin" />
+                  ) : (
+                    <SparklesIcon />
+                  )}{' '}
+                  Generate AI Summary
+                </Button>
+              )}
 
               {showSummary && (
-                <div className="mt-4 p-4 bg-secondary/10 border border-secondary/20 rounded-lg animate-in fade-in slide-in-from-top-2 duration-300">
-                  <div className="flex gap-3">
-                    <div className="shrink-0 text-xl">🤖</div>
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between mb-2">
-                        <h3 className="font-semibold text-foreground">
-                          AI Thread Summary
-                        </h3>
+                <div>
+                  <div className="mt-4 p-4 bg-secondary/10 border border-secondary/20 rounded-lg animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="flex gap-3">
+                      <div className="shrink-0 text-xl">🤖</div>
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between mb-2">
+                          <h3 className="font-semibold text-foreground">
+                            AI Thread Summary
+                          </h3>
+                        </div>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          {summary}
+                        </p>
                       </div>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        Lorem ipsum, dolor sit amet consectetur adipisicing
-                        elit. Delectus odit hic numquam rem omnis aliquam,
-                        consectetur exercitationem labore recusandae iste
-                        necessitatibus tempore a facilis, cum id fugiat est
-                        nesciunt eius tenetur ad odio? Maxime eos et quasi.
-                        Minus autem eos error veritatis vitae repellat
-                        quibusdam. Ducimus ullam praesentium et consequatur.
-                      </p>
                     </div>
+                  </div>
+
+                  <div className="flex justify-end">
+                    <button
+                      className="cursor-pointer text-sm mt-2 text-muted-foreground flex items-center gap-2 hover:text-white"
+                      type="button"
+                      onClick={() => mutate({ id })}
+                    >
+                      {isPending ? (
+                        <Loader2 size={13} className="animate-spin" />
+                      ) : (
+                        <RefreshCcw size={13} />
+                      )}
+                      regenerate
+                    </button>
                   </div>
                 </div>
               )}
