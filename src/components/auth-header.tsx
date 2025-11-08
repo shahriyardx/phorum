@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import ProfileMenu from './profile-menu'
 
 const AuthHeader = () => {
   return (
@@ -15,6 +16,10 @@ const AuthHeader = () => {
           <ul className="flex items-center gap-5 justify-center">
             <li>
               <Link href="/">Forum</Link>
+            </li>
+
+            <li>
+              <ProfileMenu />
             </li>
           </ul>
         </div>

@@ -8,16 +8,17 @@ export type UserSessionResult = {
   user: User | undefined
   session: Session | undefined
   isPending: boolean
+  refetch: () => void
 }
 
 export const SessionContext = createContext<UserSessionResult | null>(null)
 
 const SessionProvider = ({ children }: { children: ReactNode }) => {
-  const { data, isPending } = authClient.useSession()
+  const { data, isPending, refetch } = authClient.useSession()
 
   return (
     <SessionContext.Provider
-      value={{ session: data?.session, user: data?.user, isPending }}
+      value={{ session: data?.session, user: data?.user, isPending, refetch }}
     >
       {children}
     </SessionContext.Provider>
