@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import type { Notification, Thread, User } from '@/generated/zod'
 import { useSocket } from '@/providers/socket-provider'
-import type { SocketMessage } from '@/app/thread/[id]/page'
+import type { SocketMessage } from '@/app/(main)/thread/[id]/page'
 import moment from 'moment'
 import { NotificationType } from '@/generated/prisma/enums'
 import { trpc } from '@/trpc/client'

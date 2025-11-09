@@ -1,6 +1,5 @@
 'use client'
 
-import ForumLayout from '@/components/forum-layout'
 import ThreadForm from '@/components/thread-form'
 import { Form } from '@/components/ui/form'
 import { ThreadSchema, type ThreadType } from '@/schema/thread'
@@ -29,7 +28,7 @@ const Page = () => {
   }
 
   return (
-    <ForumLayout>
+    <>
       <Link href="/" className="flex items-center gap-2 text-accent-foreground">
         <ArrowLeft /> Back to forum
       </Link>
@@ -44,7 +43,7 @@ const Page = () => {
           <ThreadForm form={form} handleSubmit={handleSubmit} />
         </Form>
       </div>
-    </ForumLayout>
+    </>
   )
 }
 

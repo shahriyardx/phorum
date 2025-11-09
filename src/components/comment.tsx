@@ -8,7 +8,7 @@ import { trpc } from '@/trpc/client'
 import useSession from '@/hooks/useSession'
 import type { Socket } from 'socket.io-client'
 import * as motion from 'motion/react-client'
-import type { SocketMessage } from '@/app/thread/[id]/page'
+import type { SocketMessage } from '@/app/(main)/thread/[id]/page'
 
 type Props = {
   comment: Comment & {

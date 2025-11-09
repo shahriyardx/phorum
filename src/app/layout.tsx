@@ -29,9 +29,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased dark`}
       >
-        <Providers>
-          <main className="h-svh overflow-y-auto">{children}</main>
-        </Providers>
+        <Providers>{children}</Providers>
         <Toaster position="bottom-right" />
       </body>
     </html>

@@ -2,7 +2,6 @@
 
 import CommentCard from '@/components/comment'
 import CommentForm from '@/components/comment-form'
-import ForumLayout from '@/components/forum-layout'
 import MarkdownRenderer from '@/components/markdown-renderer'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -114,7 +113,7 @@ const Page = () => {
   }, [id, refetchThread, socket])
 
   return (
-    <ForumLayout>
+    <>
       {isLoading && <p>Loading...</p>}
 
       {data && (
@@ -227,7 +226,7 @@ const Page = () => {
           </div>
         </div>
       )}
-    </ForumLayout>
+    </>
   )
 }
 

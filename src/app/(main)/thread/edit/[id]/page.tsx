@@ -1,6 +1,5 @@
 'use client'
 
-import ForumLayout from '@/components/forum-layout'
 import ThreadForm from '@/components/thread-form'
 import { Form } from '@/components/ui/form'
 import { ThreadSchema, type ThreadType } from '@/schema/thread'
@@ -45,7 +44,7 @@ const Page = () => {
   }
 
   return (
-    <ForumLayout>
+    <>
       {isLoading ? (
         <p>Loading...</p>
       ) : (
@@ -66,7 +65,7 @@ const Page = () => {
           </div>
         </>
       )}
-    </ForumLayout>
+    </>
   )
 }
 
