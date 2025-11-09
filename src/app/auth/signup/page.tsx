@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { authClient } from '@/lib/auth-client'
 import { useRouter } from 'next/navigation'
+import AuthLayout from '@/components/auth-layout'
 
 const SignUpScema = z
   .object({
@@ -45,10 +46,12 @@ export default function Page() {
   }
 
   return (
-    <div className="flex w-full items-center justify-center p-10">
-      <div className="w-full max-w-sm">
-        <SignupForm form={form} submitHandler={handleSignUp} />
+    <AuthLayout>
+      <div className="flex w-full items-center justify-center p-10">
+        <div className="w-full max-w-sm">
+          <SignupForm form={form} submitHandler={handleSignUp} />
+        </div>
       </div>
-    </div>
+    </AuthLayout>
   )
 }

@@ -15,18 +15,15 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import useSession from '@/hooks/useSession'
 
 const ProfileMenu = () => {
-  const { user, isPending } = useSession()
+  const { session, user, isPending } = useSession()
   const router = useRouter()
-
+  console.log(user)
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        {user ? (
+        {session && user ? (
           <Avatar className="rounded-lg">
-            <AvatarImage
-              src={user?.image as string}
-              alt={user?.name}
-            />
+            <AvatarImage src={user?.image as string} alt={user?.name} />
             <AvatarFallback>{user.initials}</AvatarFallback>
           </Avatar>
         ) : (

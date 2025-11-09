@@ -65,7 +65,7 @@ export const threadRouter = createTRPCRouter({
       })
     }),
 
-  update: protectedProcedure
+  updateThreadById: protectedProcedure
     .input(
       z.object({
         id: z.string(),
@@ -123,5 +123,30 @@ export const threadRouter = createTRPCRouter({
       )
 
       return { summary: text }
+    }),
+  userThreads: protectedProcedure.query(async ({ ctx }) => {
+    return await ctx.prisma.thread.findMany({
+      where: {
+        userId: ctx.session.user.id,
+      },
+      include: {
+        Category: true,
+        _count: {
+          select: {
+            comments: true,
+          },
+        },
+      },
+    })
+  }),
+  deleteUserThreadById: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.prisma.thread.delete({
+        where: {
+          id: input.id,
+          userId: ctx.session.user.id,
+        },
+      })
     }),
 })

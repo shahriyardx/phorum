@@ -20,7 +20,9 @@ const useSession = () => {
 
   return {
     ...session,
-    user: { ...session.user, initials: getInitials(session.user?.name || '?') },
+    user: session.user
+      ? { ...session.user, initials: getInitials(session.user?.name || '?') }
+      : null,
   }
 }
 

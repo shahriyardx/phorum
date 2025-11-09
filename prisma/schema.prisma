@@ -157,10 +157,10 @@ model Notification {
   commentId  String?
   status     NotificationStatus @default(UNREAD)
 
-  sender   User @relation("SentNotifications", fields: [senderId], references: [id])
-  receiver User @relation("ReceivedNotifications", fields: [receiverId], references: [id])
+  sender   User @relation("SentNotifications", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("ReceivedNotifications", fields: [receiverId], references: [id], onDelete: Cascade)
 
-  thread  Thread   @relation(fields: [threadId], references: [id])
+  thread  Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
   comment Comment? @relation("NotificationComment", fields: [commentId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
