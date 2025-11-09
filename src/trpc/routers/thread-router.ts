@@ -73,6 +73,21 @@ export const threadRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      const thread = await ctx.prisma.thread.findFirst({
+        where: {
+          id: input.id,
+        },
+      })
+
+      if (!thread)
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'thread not found' })
+
+      if (thread.userId !== ctx.session.user.id)
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: 'you are not allowed to edit this thread',
+        })
+
       return await ctx.prisma.thread.update({
         where: {
           id: input.id,

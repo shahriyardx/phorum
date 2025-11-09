@@ -16,7 +16,7 @@ const Page = () => {
   const { id } = useParams<{ id: string }>()
   const { data, isLoading } = trpc.thread.getById.useQuery({ id })
 
-  const { mutate } = trpc.thread.update.useMutation({
+  const { mutate } = trpc.thread.updateThreadById.useMutation({
     onSuccess: () => {
       toast.success('Thread has been updated')
     },

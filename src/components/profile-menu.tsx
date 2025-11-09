@@ -1,6 +1,6 @@
 'use client'
 
-import { Book, Loader2, LogOut, User2Icon } from 'lucide-react'
+import { Loader2, LogOut, User2Icon } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -50,9 +50,6 @@ const ProfileMenu = () => {
           <DropdownMenuGroup>
             <DropdownMenuItem onSelect={() => router.push('/auth/profile')}>
               <User2Icon /> Profile
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Book /> My Threads
             </DropdownMenuItem>
             <DropdownMenuItem onSelect={() => authClient.signOut()}>
               <LogOut />
