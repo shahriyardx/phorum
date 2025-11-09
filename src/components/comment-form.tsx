@@ -16,7 +16,7 @@ import { Button } from './ui/button'
 import { SendIcon } from 'lucide-react'
 import { trpc } from '@/trpc/client'
 import { toast } from 'sonner'
-import type { Comment } from '@/generated/zod'
+import type { Comment, Notification } from '@/generated/zod'
 import type { Socket } from 'socket.io-client'
 
 const CommentSchema = z.object({
@@ -37,7 +37,13 @@ const CommentForm = ({
   threadId: string
   parentId?: string
   placeholder?: string
-  onSuccess?: (comment: Comment) => void
+  onSuccess?: ({
+    comment,
+    notifications,
+  }: {
+    comment: Comment
+    notifications: Notification[]
+  }) => void
   socket: Socket
   shrink?: boolean
 }) => {
@@ -49,14 +55,21 @@ const CommentForm = ({
     trpc.comment.createComment.useMutation({
       onSuccess: (data) => {
         form.reset({ content: '' })
-        if (onSuccess) {
-          onSuccess(data)
-        }
+
+        onSuccess?.(data)
 
         socket.emit('message', {
-          room: data.threadId,
+          room: data.comment.threadId,
           type: 'comment',
-          message: data,
+          message: data.comment,
+        })
+
+        data.notifications.forEach((notification) => {
+          socket.emit('message', {
+            type: 'notification',
+            room: `notifications:${notification.receiverId}`,
+            message: notification,
+          })
         })
       },
       onError: (e) => {
@@ -72,9 +85,17 @@ const CommentForm = ({
         }
 
         socket.emit('message', {
-          room: data.threadId,
+          room: data.comment.threadId,
           type: 'comment',
-          message: data,
+          message: data.comment,
+        })
+
+        data.notifications.forEach((notification) => {
+          socket.emit('message', {
+            type: 'notification',
+            room: `notifications:${notification.receiverId}`,
+            message: notification,
+          })
         })
       },
       onError: (e) => {

@@ -6,9 +6,8 @@ import ForumLayout from '@/components/forum-layout'
 import MarkdownRenderer from '@/components/markdown-renderer'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { socket } from '@/lib/socket'
 import { trpc } from '@/trpc/client'
-import type { Comment, User } from '@/generated/zod'
+import type { Comment, Thread, User } from '@/generated/zod'
 import {
   ArrowLeft,
   Loader2,
@@ -19,6 +18,7 @@ import {
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { useSocket } from '@/providers/socket-provider'
 
 export type SocketMessage = {
   room: string
@@ -28,9 +28,17 @@ export type SocketMessage = {
       message: Comment & { author: Pick<User, 'name' | 'email' | 'id'> }
     }
   | { type: 'deleteComment'; message: Pick<Comment, 'id' | 'parentId'> }
+  | {
+      type: 'notification'
+      message: Notification & {
+        sender: Pick<User, 'name'>
+        thread: Pick<Thread, 'title'>
+      }
+    }
 )
 
 const Page = () => {
+  const socket = useSocket()
   const { id } = useParams<{ id: string }>()
   const {
     data,
@@ -42,15 +50,17 @@ const Page = () => {
   const { data: commentsData } = trpc.comment.topLevelComments.useQuery({
     threadId: id,
   })
-  const [showSummary, setShowSummary] = useState(false)
-  const [comments, setComments] = useState(commentsData || [])
-  const [summary, setSummary] = useState<string | null>(null)
+
   const { mutate, isPending } = trpc.thread.getAiSummary.useMutation({
     onSuccess: (data) => {
       setShowSummary(true)
       setSummary(data.summary)
     },
   })
+
+  const [showSummary, setShowSummary] = useState(false)
+  const [comments, setComments] = useState(commentsData || [])
+  const [summary, setSummary] = useState<string | null>(null)
 
   useEffect(() => {
     if (commentsData) {
@@ -59,12 +69,7 @@ const Page = () => {
   }, [commentsData])
 
   useEffect(() => {
-    socket.connect()
-
-    socket.on('connect', () => {
-      console.log('Connected to socket')
-      socket.emit('join', id)
-    })
+    socket.emit('join', id)
 
     socket.on('message', ({ room, type, message }: SocketMessage) => {
       if (room !== id) return
@@ -105,9 +110,8 @@ const Page = () => {
 
     return () => {
       socket.emit('leave', id)
-      socket.disconnect()
     }
-  }, [id, refetchThread])
+  }, [id, refetchThread, socket])
 
   return (
     <ForumLayout>
@@ -217,16 +221,7 @@ const Page = () => {
             </div>
             <div className="mt-10">
               <div>
-                <CommentForm
-                  socket={socket}
-                  threadId={id}
-                  onSuccess={(data) => {
-                    socket.emit('message', {
-                      room: id,
-                      message: data,
-                    })
-                  }}
-                />
+                <CommentForm socket={socket} threadId={id} />
               </div>
             </div>
           </div>

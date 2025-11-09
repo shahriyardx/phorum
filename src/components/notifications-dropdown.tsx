@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Bell, Check, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -10,61 +10,69 @@ import {
   DropdownMenuSeparator,
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu'
+import type { Notification, Thread, User } from '@/generated/zod'
+import { useSocket } from '@/providers/socket-provider'
+import type { SocketMessage } from '@/app/thread/[id]/page'
+import moment from 'moment'
+import { NotificationType } from '@/generated/prisma/enums'
 
-export const notifications = [
-  {
-    id: 1,
-    type: 'reply',
-    message: 'Sarah replied to your post in "Real-time chat features"',
-    timestamp: '10 minutes ago',
-    read: false,
-  },
-  {
-    id: 2,
-    type: 'mention',
-    message: 'Mike mentioned you in "Database scaling"',
-    timestamp: '1 hour ago',
-    read: false,
-  },
-  {
-    id: 3,
-    type: 'like',
-    message: 'Your post got 5 new likes',
-    timestamp: '3 hours ago',
-    read: true,
-  },
-]
-export function NotificationsDropdown() {
-  const [notificationsList, setNotificationsList] = useState(notifications)
+type SocketNotification = Notification & {
+  sender: Pick<User, 'name'>
+  thread: Pick<Thread, 'title'>
+}
 
-  const unreadCount = notificationsList.filter((n) => !n.read).length
+export function NotificationsDropdown({ user }: { user: Partial<User> }) {
+  const [notificationsList, setNotificationsList] = useState<
+    SocketNotification[]
+  >([])
+  const socket = useSocket()
+  const userId = user?.id ?? null
+  const joinedRef = useRef(false)
 
-  const handleMarkAsRead = (id: number) => {
-    setNotificationsList((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
-    )
-  }
+  const unreadCount = notificationsList.filter(
+    (n) => n.status === 'UNREAD',
+  ).length
 
   const handleClearAll = () => {
     setNotificationsList((prev) => prev.map((n) => ({ ...n, read: true })))
   }
 
-  const handleRemoveNotification = (id: number) => {
-    setNotificationsList((prev) => prev.filter((n) => n.id !== id))
-  }
-
-  const getNotificationIcon = (type: string) => {
+  const getNotificationIcon = (type: NotificationType) => {
     switch (type) {
-      case 'reply':
+      case NotificationType.THREAD_COMMENT:
         return '💬'
-      case 'mention':
-        return '👤'
-      case 'like':
-        return '❤️'
+      case NotificationType.REPLY:
+        return '↩️'
       default:
         return '📢'
     }
   }
+
+  const handleMessage = useCallback(
+    (message: SocketMessage & { message: SocketNotification }) => {
+      if (message.type !== 'notification') return
+      setNotificationsList((prev) => [message.message, ...prev])
+    },
+    [],
+  )
+
+  useEffect(() => {
+    if (!userId) return
+    const room = `notifications:${userId}`
+
+    socket.emit('join', room)
+
+    const join = () => {
+      if (!joinedRef.current) {
+        socket.emit('join', room)
+        joinedRef.current = true
+      }
+    }
+
+    join()
+
+    socket.on('message', handleMessage)
+  }, [socket, userId, handleMessage])
 
   return (
     <DropdownMenu>
@@ -101,7 +109,7 @@ export function NotificationsDropdown() {
               <div
                 key={notification.id}
                 className={`px-4 py-3 hover:bg-accent/50 transition-colors group border-b last:border-b-0 ${
-                  !notification.read ? 'bg-accent/20' : ''
+                  notification.status === 'UNREAD' ? 'bg-accent/20' : ''
                 }`}
               >
                 <div className="flex gap-3">
@@ -113,30 +121,37 @@ export function NotificationsDropdown() {
                   {/* Content */}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground leading-tight">
-                      {notification.message}
+                      {notification.sender.name}{' '}
+                      {notification.type === 'REPLY'
+                        ? 'replied to your comment on thread'
+                        : 'commented on your thread'}{' '}
+                      <span className="font-bold">
+                        {notification.thread.title}
+                      </span>
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {notification.timestamp}
+                      {moment(notification.createdAt).fromNow()}
                     </p>
                   </div>
 
                   {/* Actions */}
                   <div className="shrink-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {!notification.read && (
+                    {notification.status !== 'UNREAD' && (
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleMarkAsRead(notification.id)}
+                        onClick={() => console.log(notification)}
                         className="h-6 w-6 p-0"
                         title="Mark as read"
                       >
                         <Check className="w-4 h-4 text-muted-foreground" />
                       </Button>
                     )}
+
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleRemoveNotification(notification.id)}
+                      onClick={() => console.log(notification)}
                       className="h-6 w-6 p-0"
                       title="Remove"
                     >

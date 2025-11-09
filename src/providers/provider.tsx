@@ -1,14 +1,17 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import SessionProvider from './SessionProvider'
+import SessionProvider from './session-provider'
 import { TRPCProvider } from '@/trpc/client'
+import { SocketProvider } from './socket-provider'
 
 const Providers = ({ children }: { children: ReactNode }) => {
   return (
-    <SessionProvider>
-      <TRPCProvider>{children}</TRPCProvider>
-    </SessionProvider>
+    <SocketProvider>
+      <SessionProvider>
+        <TRPCProvider>{children}</TRPCProvider>
+      </SessionProvider>
+    </SocketProvider>
   )
 }
 

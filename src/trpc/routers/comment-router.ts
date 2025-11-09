@@ -64,7 +64,7 @@ export const commentRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      return await ctx.prisma.comment.create({
+      const comment = await ctx.prisma.comment.create({
         data: {
           content: input.content,
           threadId: input.threadId,
@@ -79,6 +79,41 @@ export const commentRouter = createTRPCRouter({
           },
         },
       })
+
+      const thread = await ctx.prisma.thread.findUnique({
+        where: {
+          id: input.threadId,
+        },
+      })
+
+      const notifications = []
+
+      if (thread && thread.userId !== ctx.session.user.id) {
+        const notification = await ctx.prisma.notification.create({
+          data: {
+            type: 'THREAD_COMMENT',
+            senderId: ctx.session.user.id,
+            receiverId: thread?.userId,
+            threadId: input.threadId,
+          },
+          include: {
+            sender: {
+              select: {
+                name: true,
+              },
+            },
+            thread: {
+              select: {
+                title: true,
+              },
+            },
+          },
+        })
+
+        notifications.push(notification)
+      }
+
+      return { comment, notifications: notifications }
     }),
   deleteComment: protectedProcedure
     .input(z.object({ id: z.string() }))
@@ -111,7 +146,7 @@ export const commentRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      return await ctx.prisma.comment.create({
+      const comment = await ctx.prisma.comment.create({
         data: {
           content: input.content,
           threadId: input.threadId,
@@ -128,5 +163,73 @@ export const commentRouter = createTRPCRouter({
           },
         },
       })
+
+      const parentComment = await ctx.prisma.comment.findUnique({
+        where: {
+          id: input.parentId,
+        },
+      })
+
+      const thread = await ctx.prisma.thread.findUnique({
+        where: {
+          id: input.threadId,
+        },
+      })
+
+      const notifications = []
+
+      if (thread && thread.userId !== parentComment?.userId) {
+        const notification1 = await ctx.prisma.notification.create({
+          data: {
+            type: 'THREAD_COMMENT',
+            senderId: ctx.session.user.id,
+            receiverId: thread?.userId,
+            threadId: input.threadId,
+            commentId: input.parentId,
+          },
+          include: {
+            sender: {
+              select: {
+                name: true,
+              },
+            },
+            thread: {
+              select: {
+                title: true,
+              },
+            },
+          },
+        })
+
+        notifications.push(notification1)
+      }
+
+      if (parentComment) {
+        const notification2 = await ctx.prisma.notification.create({
+          data: {
+            type: 'REPLY',
+            senderId: ctx.session.user.id,
+            receiverId: parentComment?.userId,
+            threadId: input.threadId,
+            commentId: input.parentId,
+          },
+          include: {
+            sender: {
+              select: {
+                name: true,
+              },
+            },
+            thread: {
+              select: {
+                title: true,
+              },
+            },
+          },
+        })
+
+        notifications.push(notification2)
+      }
+
+      return { comment, notifications: notifications }
     }),
 })

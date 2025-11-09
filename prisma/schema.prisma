@@ -21,17 +21,19 @@ datasource db {
 }
 
 model User {
-  id            String    @id
-  name          String
-  email         String
-  emailVerified Boolean   @default(false)
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @default(now()) @updatedAt
-  sessions      Session[]
-  accounts      Account[]
-  threads       Thread[]
-  comments      Comment[]
+  id                    String         @id
+  name                  String
+  email                 String
+  emailVerified         Boolean        @default(false)
+  image                 String?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @default(now()) @updatedAt
+  sessions              Session[]
+  accounts              Account[]
+  threads               Thread[]
+  comments              Comment[]
+  sentNotifications     Notification[] @relation("SentNotifications")
+  receivedNotifications Notification[] @relation("ReceivedNotifications")
 
   @@unique([email])
   @@map("user")
@@ -103,9 +105,10 @@ model Thread {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
-  author   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  Category Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  comments Comment[]
+  author        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Category      Category       @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  comments      Comment[]
+  notifications Notification[]
 
   @@map("thread")
 }
@@ -125,10 +128,42 @@ model Comment {
   updatedAt DateTime @default(now()) @updatedAt
 
   // relations
-  thread  Thread    @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  author  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  parent  Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
-  replies Comment[] @relation("CommentReplies")
+  thread        Thread         @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  author        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent        Comment?       @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies       Comment[]      @relation("CommentReplies")
+  notifications Notification[] @relation("NotificationComment")
 
   @@map("comment")
+}
+
+enum NotificationType {
+  THREAD_COMMENT
+  REPLY
+}
+
+enum NotificationStatus {
+  UNREAD
+  READ
+}
+
+model Notification {
+  id   String           @id @default(cuid())
+  type NotificationType
+
+  senderId   String
+  receiverId String
+  threadId   String
+  commentId  String?
+  status     NotificationStatus @default(UNREAD)
+
+  sender   User @relation("SentNotifications", fields: [senderId], references: [id])
+  receiver User @relation("ReceivedNotifications", fields: [receiverId], references: [id])
+
+  thread  Thread   @relation(fields: [threadId], references: [id])
+  comment Comment? @relation("NotificationComment", fields: [commentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@map("notification")
 }
