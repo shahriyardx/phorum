@@ -15,6 +15,7 @@ import { useSocket } from '@/providers/socket-provider'
 import type { SocketMessage } from '@/app/thread/[id]/page'
 import moment from 'moment'
 import { NotificationType } from '@/generated/prisma/enums'
+import { trpc } from '@/trpc/client'
 
 type SocketNotification = Notification & {
   sender: Pick<User, 'name'>
@@ -25,6 +26,34 @@ export function NotificationsDropdown({ user }: { user: Partial<User> }) {
   const [notificationsList, setNotificationsList] = useState<
     SocketNotification[]
   >([])
+
+  const { data: notifications, refetch } =
+    trpc.notif.userNotifications.useQuery()
+  const { mutate: deleteNotification } =
+    trpc.notif.deleteNotification.useMutation({
+      onSuccess: () => {
+        refetch()
+      },
+    })
+  const { mutate: markAsRead } = trpc.notif.markAsRead.useMutation({
+    onSuccess: () => {
+      refetch()
+    },
+  })
+
+  const { mutate: markAllAsRead } = trpc.notif.markAllAsRead.useMutation({
+    onSuccess: () => {
+      refetch()
+    },
+  })
+
+  console.log(notifications)
+  useEffect(() => {
+    if (notifications) {
+      setNotificationsList(notifications)
+    }
+  }, [notifications])
+
   const socket = useSocket()
   const userId = user?.id ?? null
   const joinedRef = useRef(false)
@@ -32,10 +61,6 @@ export function NotificationsDropdown({ user }: { user: Partial<User> }) {
   const unreadCount = notificationsList.filter(
     (n) => n.status === 'UNREAD',
   ).length
-
-  const handleClearAll = () => {
-    setNotificationsList((prev) => prev.map((n) => ({ ...n, read: true })))
-  }
 
   const getNotificationIcon = (type: NotificationType) => {
     switch (type) {
@@ -74,13 +99,15 @@ export function NotificationsDropdown({ user }: { user: Partial<User> }) {
     socket.on('message', handleMessage)
   }, [socket, userId, handleMessage])
 
+  console.log(notificationsList)
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="w-5 h-5" />
           {unreadCount > 0 && (
-            <span className="absolute top-1 right-1 w-2 h-2 bg-accent rounded-full" />
+            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
           )}
         </Button>
       </DropdownMenuTrigger>
@@ -108,8 +135,10 @@ export function NotificationsDropdown({ user }: { user: Partial<User> }) {
             {notificationsList.map((notification) => (
               <div
                 key={notification.id}
-                className={`px-4 py-3 hover:bg-accent/50 transition-colors group border-b last:border-b-0 ${
-                  notification.status === 'UNREAD' ? 'bg-accent/20' : ''
+                className={`px-4 py-3 transition-colors group border-b last:border-b-0 ${
+                  notification.status === 'UNREAD'
+                    ? 'bg-green-500/20 hover:bg-green-500/20'
+                    : 'hover:bg-accent/50'
                 }`}
               >
                 <div className="flex gap-3">
@@ -136,11 +165,11 @@ export function NotificationsDropdown({ user }: { user: Partial<User> }) {
 
                   {/* Actions */}
                   <div className="shrink-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {notification.status !== 'UNREAD' && (
+                    {notification.status === 'UNREAD' && (
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => console.log(notification)}
+                        onClick={() => markAsRead({ id: notification.id })}
                         className="h-6 w-6 p-0"
                         title="Mark as read"
                       >
@@ -151,9 +180,11 @@ export function NotificationsDropdown({ user }: { user: Partial<User> }) {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => console.log(notification)}
                       className="h-6 w-6 p-0"
                       title="Remove"
+                      onClick={() =>
+                        deleteNotification({ id: notification.id })
+                      }
                     >
                       <X className="w-4 h-4 text-muted-foreground" />
                     </Button>
@@ -169,7 +200,7 @@ export function NotificationsDropdown({ user }: { user: Partial<User> }) {
           <>
             <DropdownMenuSeparator className="m-0" />
             <DropdownMenuItem
-              onClick={handleClearAll}
+              onClick={() => markAllAsRead()}
               className="text-xs justify-center py-2"
             >
               Mark all as read
