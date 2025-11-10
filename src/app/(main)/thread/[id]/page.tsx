@@ -115,6 +115,14 @@ const Page = () => {
   return (
     <>
       {isLoading && <p>Loading...</p>}
+      {!isLoading && !data && (
+        <div className="text-center py-20">
+          <h1 className="text-3xl font-bold">Thread not found</h1>
+          <p className="text-muted-foreground mt-2">
+            The thread you’re looking for doesn’t exist or has been deleted.
+          </p>
+        </div>
+      )}
 
       {data && (
         <div>
