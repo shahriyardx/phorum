@@ -19,15 +19,18 @@ import { Textarea } from './ui/textarea'
 import Link from 'next/link'
 import { trpc } from '@/trpc/client'
 import type { ThreadType } from '@/schema/thread'
+import { Loader2 } from 'lucide-react'
 
 const ThreadForm = ({
   form,
   handleSubmit,
   update,
+  isPending,
 }: {
   form: UseFormReturn<ThreadType>
   handleSubmit: (values: ThreadType) => void
   update?: boolean
+  isPending: boolean
 }) => {
   const { data: categories } = trpc.category.allCategories.useQuery()
 
@@ -154,7 +157,10 @@ const ThreadForm = ({
             <Link href={'/'}>Cancel</Link>
           </Button>
 
-          <Button>{update ? 'Update' : 'Create'} Thread</Button>
+          <Button disabled={isPending}>
+            {isPending && <Loader2 className="animate-spin" />}
+            {update ? 'Update' : 'Create'} Thread
+          </Button>
         </div>
       </FieldGroup>
     </form>

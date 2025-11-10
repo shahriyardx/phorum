@@ -16,7 +16,7 @@ const Page = () => {
   const { id } = useParams<{ id: string }>()
   const { data, isLoading } = trpc.thread.getById.useQuery({ id })
 
-  const { mutate } = trpc.thread.updateThreadById.useMutation({
+  const { mutate, isPending } = trpc.thread.updateThreadById.useMutation({
     onSuccess: () => {
       toast.success('Thread has been updated')
     },
@@ -60,7 +60,12 @@ const Page = () => {
 
           <div className="mt-5">
             <Form {...form}>
-              <ThreadForm form={form} handleSubmit={handleSubmit} update />
+              <ThreadForm
+                form={form}
+                handleSubmit={handleSubmit}
+                isPending={isPending}
+                update
+              />
             </Form>
           </div>
         </>

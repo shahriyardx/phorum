@@ -1,4 +1,3 @@
-import ForumLayout from '@/components/forum-layout'
 import { prisma } from '@/lib/db'
 import type { ReactNode } from 'react'
 

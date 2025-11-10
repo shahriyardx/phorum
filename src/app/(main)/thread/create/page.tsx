@@ -15,7 +15,7 @@ const Page = () => {
     resolver: zodResolver(ThreadSchema),
   })
 
-  const { mutate } = trpc.thread.create.useMutation({
+  const { mutate, isPending } = trpc.thread.create.useMutation({
     onSuccess: () => {
       toast.success('Thread has been created')
       form.reset({
@@ -46,7 +46,11 @@ const Page = () => {
 
       <div className="mt-5">
         <Form {...form}>
-          <ThreadForm form={form} handleSubmit={handleSubmit} />
+          <ThreadForm
+            form={form}
+            handleSubmit={handleSubmit}
+            isPending={isPending}
+          />
         </Form>
       </div>
     </>
