@@ -16,5 +16,4 @@ export const userRouter = createTRPCRouter({
 
     return { threads, comments }
   }),
-  
 })
