@@ -9,7 +9,7 @@ export default function RootLayout({
   return (
     <ForumLayout>
       <Suspense fallback={<>...</>}>
-        <main className="h-svh overflow-y-auto">{children}</main>
+        <main>{children}</main>
       </Suspense>
     </ForumLayout>
   )
