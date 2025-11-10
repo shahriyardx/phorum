@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { authClient } from '@/lib/auth-client'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 
 const SignUpScema = z
   .object({
@@ -22,18 +23,22 @@ const SignUpScema = z
 export type SignUp = z.infer<typeof SignUpScema>
 
 export default function Page() {
+  const [loading, setLoading] = useState(false)
+
   const router = useRouter()
   const form = useForm<SignUp>({
     resolver: zodResolver(SignUpScema),
   })
 
   const handleSignUp = async (values: SignUp) => {
+    setLoading(true)
     const { error } = await authClient.signUp.email({
       name: values.name,
       email: values.email,
       password: values.password,
     })
 
+    setLoading(false)
     if (error) {
       return form.setError('email', {
         type: 'manual',
@@ -47,7 +52,11 @@ export default function Page() {
   return (
     <div className="flex w-full items-center justify-center p-10">
       <div className="w-full max-w-sm">
-        <SignupForm form={form} submitHandler={handleSignUp} />
+        <SignupForm
+          form={form}
+          submitHandler={handleSignUp}
+          isLoading={loading}
+        />
       </div>
     </div>
   )

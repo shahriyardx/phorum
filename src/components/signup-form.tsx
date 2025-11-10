@@ -20,14 +20,17 @@ import { Input } from '@/components/ui/input'
 import type { UseFormReturn } from 'react-hook-form'
 import type { SignUp } from '@/app/auth/signup/page'
 import GoogleSignIn from './google-sign-in'
+import { Loader2 } from 'lucide-react'
 
 export function SignupForm({
   form,
   submitHandler,
+  isLoading,
   ...props
 }: React.ComponentProps<typeof Card> & {
   form: UseFormReturn<SignUp>
   submitHandler: (data: SignUp) => Promise<void>
+  isLoading: boolean
 }) {
   return (
     <Card {...props}>
@@ -74,7 +77,11 @@ export function SignupForm({
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input placeholder="Password" {...field} />
+                      <Input
+                        type="password"
+                        placeholder="Password"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -87,7 +94,11 @@ export function SignupForm({
                   <FormItem>
                     <FormLabel>Confirm Password</FormLabel>
                     <FormControl>
-                      <Input placeholder="Confirm Password" {...field} />
+                      <Input
+                        type="password"
+                        placeholder="Confirm Password"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -96,7 +107,10 @@ export function SignupForm({
 
               <FieldGroup>
                 <Field>
-                  <Button type="submit">Create Account</Button>
+                  <Button disabled={isLoading} type="submit">
+                    {isLoading && <Loader2 className="animate-spin" />}
+                    Create Account
+                  </Button>
                   <GoogleSignIn />
                   <FieldDescription className="px-6 text-center">
                     Already have an account?{' '}

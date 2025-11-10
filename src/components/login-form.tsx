@@ -21,15 +21,18 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import GoogleSignIn from './google-sign-in'
+import { Loader2 } from 'lucide-react'
 
 export function LoginForm({
   form,
   submitHandler,
   className,
+  isLoading,
   ...props
 }: React.ComponentProps<'div'> & {
   form: UseFormReturn<SignIn>
   submitHandler: (data: SignIn) => Promise<void>
+  isLoading: boolean
 }) {
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
@@ -64,7 +67,11 @@ export function LoginForm({
                     <FormItem>
                       <FormLabel>Password</FormLabel>
                       <FormControl>
-                        <Input placeholder="Password" {...field} />
+                        <Input
+                          type="password"
+                          placeholder="Password"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -72,7 +79,10 @@ export function LoginForm({
                 />
 
                 <Field>
-                  <Button type="submit">Login</Button>
+                  <Button disabled={isLoading} type="submit">
+                    {isLoading && <Loader2 className="animate-spin" />}
+                    Login
+                  </Button>
                   <GoogleSignIn />
                   <FieldDescription className="text-center">
                     Don&apos;t have an account?{' '}
