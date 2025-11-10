@@ -1,4 +1,5 @@
 import ForumLayout from '@/components/forum-layout'
+import { Suspense } from 'react'
 
 export default function RootLayout({
   children,
@@ -7,7 +8,9 @@ export default function RootLayout({
 }>) {
   return (
     <ForumLayout>
-      <main className="h-svh overflow-y-auto">{children}</main>
+      <Suspense fallback={<>...</>}>
+        <main className="h-svh overflow-y-auto">{children}</main>
+      </Suspense>
     </ForumLayout>
   )
 }
