@@ -13,11 +13,12 @@ import {
 } from '@/components/ui/form'
 import { Textarea } from './ui/textarea'
 import { Button } from './ui/button'
-import { SendIcon } from 'lucide-react'
+import { Loader2, SendIcon, UserIcon } from 'lucide-react'
 import { trpc } from '@/trpc/client'
 import { toast } from 'sonner'
 import type { Comment, Notification } from '@/generated/zod'
 import type { Socket } from 'socket.io-client'
+import useSession from '@/hooks/useSession'
 
 const CommentSchema = z.object({
   content: z
@@ -47,6 +48,7 @@ const CommentForm = ({
   socket: Socket
   shrink?: boolean
 }) => {
+  const { session } = useSession()
   const form = useForm<z.infer<typeof CommentSchema>>({
     resolver: zodResolver(CommentSchema),
   })
@@ -123,36 +125,65 @@ const CommentForm = ({
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleComment)}>
-        <div className="flex gap-5">
-          <FormField
-            control={form.control}
-            name="content"
-            render={({ field }) => (
-              <FormItem className="flex-1">
-                <FormControl>
-                  <Textarea
-                    className={shrink ? 'h-auto' : 'h-64'}
-                    placeholder={placeholder || 'write something cool here...'}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-                {!shrink && (
-                  <FormDescription>
-                    Comments are being moderated by AI
-                  </FormDescription>
+    <>
+      {session ? (
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleComment)}>
+            <div className="flex gap-5">
+              <FormField
+                control={form.control}
+                name="content"
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <FormControl>
+                      <Textarea
+                        className={shrink ? 'h-auto' : 'h-64'}
+                        placeholder={
+                          placeholder || 'write something cool here...'
+                        }
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                    {!shrink && (
+                      <FormDescription>
+                        Comments are being moderated by AI
+                      </FormDescription>
+                    )}
+                  </FormItem>
                 )}
-              </FormItem>
-            )}
-          />
-          <Button disabled={commentIsPending || replyIsPending} size={'icon'}>
-            <SendIcon />
-          </Button>
+              />
+              <Button
+                disabled={commentIsPending || replyIsPending}
+                size={'icon'}
+              >
+                {commentIsPending || replyIsPending ? (
+                  <Loader2 />
+                ) : (
+                  <SendIcon />
+                )}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      ) : (
+        <div className="mb-6 p-4 bg-primary/10 border border-primary/30 rounded-lg animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="flex gap-3">
+            <div className="shrink-0 text-xl">
+              <UserIcon />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-primary">
+                You are not logged in
+              </h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                Please login to reply on this thread
+              </p>
+            </div>
+          </div>
         </div>
-      </form>
-    </Form>
+      )}
+    </>
   )
 }
 

@@ -14,12 +14,12 @@ const Home = () => {
   const params = useSearchParams()
   const activeTopicId = params.get('topic')
 
-  const [query, setQuery] = useState('optimize')
+  const [query, setQuery] = useState('')
   const {
     data: threads,
     isLoading,
     isFetched,
-  } = trpc.thread.allThreads.useQuery                                                                                                                                                       ({
+  } = trpc.thread.allThreads.useQuery({
     query,
     topic: activeTopicId,
   })

@@ -43,6 +43,9 @@ export const threadRouter = createTRPCRouter({
       console.log(input)
 
       return await ctx.prisma.thread.findMany({
+        orderBy: {
+          createdAt: 'desc',
+        },
         where: {
           AND: [
             input.query
@@ -58,6 +61,9 @@ export const threadRouter = createTRPCRouter({
                   categoryId: input.topic,
                 }
               : {},
+            {
+              isFlagged: false,
+            },
           ],
         },
         include: {

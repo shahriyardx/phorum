@@ -118,6 +118,21 @@ const Page = () => {
 
       {data && (
         <div>
+          {data.isFlagged && (
+            <div className="mb-6 p-4 bg-destructive/10 border border-destructive/30 rounded-lg animate-in fade-in slide-in-from-top-2 duration-300">
+              <div className="flex gap-3">
+                <div className="shrink-0 text-xl">⚠️</div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-destructive">
+                    This thread has been flagged
+                  </h3>
+                  <p className="text-sm text-destructive/80 mt-1">
+                    {data.flagReason}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
           <Link
             href="/"
             className="flex items-center gap-2 text-accent-foreground"
@@ -205,10 +220,14 @@ const Page = () => {
             </div>
 
             <div className="mt-10">
-              <h2 className="text-2xl font-bold text-muted-foreground">
-                Comments
-              </h2>
+              <h2 className="text-2xl font-bold text-primary">Replies</h2>
               <div className="mt-2">
+                {!comments.length && (
+                  <p className="text-muted-foreground">
+                    No replies yet, be the first to make a reply
+                  </p>
+                )}
+
                 {comments?.map((comment) => (
                   <CommentCard
                     key={comment.id}
