@@ -50,10 +50,10 @@ const Page = () => {
       ) : (
         <>
           <Link
-            href="/profile/threads"
+            href="/auth/profile"
             className="flex items-center gap-2 text-accent-foreground"
           >
-            <ArrowLeft /> My Threads
+            <ArrowLeft /> Back to profile
           </Link>
 
           <h1 className="text-2xl font-bold mt-3">Edit Thread</h1>

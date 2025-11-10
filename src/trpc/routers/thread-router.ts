@@ -2,7 +2,7 @@ import z from 'zod'
 import { createTRPCRouter, protectedProcedure, publicProcedure } from '../init'
 import { ThreadSchema } from '@/schema/thread'
 import { TRPCError } from '@trpc/server'
-import { getAiResponse } from '@/lib/ai'
+import { getAiResponse, getThreadProfanityData } from '@/lib/ai'
 
 export const threadRouter = createTRPCRouter({
   topics: publicProcedure.query(async ({ ctx }) => {
@@ -11,11 +11,24 @@ export const threadRouter = createTRPCRouter({
   create: protectedProcedure
     .input(ThreadSchema)
     .mutation(async ({ ctx, input }) => {
+      const text = await getThreadProfanityData(
+        JSON.stringify(
+          { title: input.title, content: input.content, brief: input.brief },
+          null,
+          2,
+        ),
+      )
+
+      const aiData = JSON.parse(text) as {
+        isFlagged: boolean
+        flagReason: string
+      }
+
       return await ctx.prisma.thread.create({
         data: {
           ...input,
+          ...aiData,
           userId: ctx.session.user.id,
-          isFlagged: false,
         },
       })
     }),
@@ -117,12 +130,30 @@ export const threadRouter = createTRPCRouter({
           message: 'you are not allowed to edit this thread',
         })
 
+      const text = await getThreadProfanityData(
+        JSON.stringify(
+          {
+            title: input.data.title,
+            content: input.data.content,
+            brief: input.data.brief,
+          },
+          null,
+          2,
+        ),
+      )
+
+      const aiData = JSON.parse(text) as {
+        isFlagged: boolean
+        flagReason: string
+      }
+
       return await ctx.prisma.thread.update({
         where: {
           id: input.id,
         },
         data: {
           ...input.data,
+          ...aiData,
         },
       })
     }),

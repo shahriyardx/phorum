@@ -19,7 +19,7 @@ const Home = () => {
     data: threads,
     isLoading,
     isFetched,
-  } = trpc.thread.allThreads.useQuery({
+  } = trpc.thread.allThreads.useQuery                                                                                                                                                       ({
     query,
     topic: activeTopicId,
   })

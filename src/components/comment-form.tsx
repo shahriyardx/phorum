@@ -73,6 +73,10 @@ const CommentForm = ({
         })
       },
       onError: (e) => {
+        form.setError('content', {
+          message: e.message,
+          type: 'validate',
+        })
         toast.error(e.message)
       },
     })

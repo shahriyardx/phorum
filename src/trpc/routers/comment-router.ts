@@ -1,5 +1,7 @@
 import z from 'zod'
 import { createTRPCRouter, protectedProcedure, publicProcedure } from '../init'
+import { getCommentProfanityData } from '@/lib/ai'
+import { TRPCError } from '@trpc/server'
 
 export const commentRouter = createTRPCRouter({
   topLevelComments: publicProcedure
@@ -64,6 +66,22 @@ export const commentRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      const text = await getCommentProfanityData(
+        JSON.stringify({ content: input.content }),
+      )
+
+      const aiData = JSON.parse(text) as {
+        isFlagged: boolean
+        flagReason: string
+      }
+
+      if (aiData.isFlagged) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: aiData.flagReason,
+        })
+      }
+
       const comment = await ctx.prisma.comment.create({
         data: {
           content: input.content,
@@ -146,6 +164,22 @@ export const commentRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      const text = await getCommentProfanityData(
+        JSON.stringify({ content: input.content }),
+      )
+
+      const aiData = JSON.parse(text) as {
+        isFlagged: boolean
+        flagReason: string
+      }
+
+      if (aiData.isFlagged) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: aiData.flagReason,
+        })
+      }
+
       const comment = await ctx.prisma.comment.create({
         data: {
           content: input.content,

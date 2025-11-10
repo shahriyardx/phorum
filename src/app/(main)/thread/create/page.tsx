@@ -11,16 +11,22 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 
 const Page = () => {
+  const form = useForm<ThreadType>({
+    resolver: zodResolver(ThreadSchema),
+  })
+
   const { mutate } = trpc.thread.create.useMutation({
     onSuccess: () => {
       toast.success('Thread has been created')
+      form.reset({
+        brief: '',
+        content: '',
+        title: '',
+      })
     },
     onError: (e) => {
       toast.error(e.message)
     },
-  })
-  const form = useForm<ThreadType>({
-    resolver: zodResolver(ThreadSchema),
   })
 
   const handleSubmit = (values: ThreadType) => {

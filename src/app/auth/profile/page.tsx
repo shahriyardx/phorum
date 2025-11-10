@@ -148,9 +148,21 @@ const Page = () => {
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
-                    <h3 className="font-semibold text-lg mb-1">
-                      {thread.title}
-                    </h3>
+                    <div className="flex items-center gap-3 mb-1">
+                      <h3 className="font-semibold text-lg">{thread.title}</h3>
+                      {thread.isFlagged && (
+                        <div className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 dark:bg-red-900 border border-red-300 dark:border-red-700 rounded text-xs font-medium text-red-700 dark:text-red-200">
+                          <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                          Flagged
+                        </div>
+                      )}
+                    </div>
+                    {thread.isFlagged && thread.flagReason && (
+                      <div className="mb-3 p-2 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded text-sm text-red-700 dark:text-red-300">
+                        <span className="font-medium">Reason: </span>
+                        {thread.flagReason}
+                      </div>
+                    )}
                     <p className="text-sm text-muted-foreground mb-3">
                       {thread.brief}
                     </p>
