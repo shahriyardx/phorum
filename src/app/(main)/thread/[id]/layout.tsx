@@ -1,8 +1,13 @@
-import RequireAuth from '@/components/require-auth'
+import ForumLayout from '@/components/forum-layout'
 import { prisma } from '@/lib/db'
 import type { ReactNode } from 'react'
 
-export async function generateMetadata({ params }: { params: { id: string } }) {
+export async function generateMetadata({
+  params: p,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const params = await p
   const thread = await prisma.thread.findFirst({
     where: { id: params.id },
     select: { title: true, brief: true },
@@ -22,7 +27,7 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
 }
 
 const Layout = ({ children }: { children: ReactNode }) => {
-  return <RequireAuth>{children}</RequireAuth>
+  return children
 }
 
 export default Layout
