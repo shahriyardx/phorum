@@ -5,11 +5,24 @@ import { ThreadSkeleton } from '@/components/thread-skeleton'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { trpc } from '@/trpc/client'
-import { PlusIcon } from 'lucide-react'
+import { Loader2, PlusIcon } from 'lucide-react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
+import { useState } from 'react'
 
 const Home = () => {
-  const { data: threads, isLoading } = trpc.thread.allThreads.useQuery()
+  const params = useSearchParams()
+  const activeTopicId = params.get('topic')
+
+  const [query, setQuery] = useState('optimize')
+  const {
+    data: threads,
+    isLoading,
+    isFetched,
+  } = trpc.thread.allThreads.useQuery({
+    query,
+    topic: activeTopicId,
+  })
 
   return (
     <div className="pb-20">
@@ -25,7 +38,12 @@ const Home = () => {
 
       <div className="mt-5">
         <div className="flex items-center gap-2">
-          <Input placeholder="Search thread" className="flex-1" />
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search thread"
+            className="flex-1"
+          />
           <Button asChild>
             <Link href="/thread/create">
               <PlusIcon /> New Thread
@@ -35,10 +53,13 @@ const Home = () => {
       </div>
 
       <div className="mt-10">
-        <h2 className="text-2xl font-bold">Discussions</h2>
+        <h2 className="text-2xl font-bold flex items-center gap-2">
+          Discussions {isLoading && <Loader2 className="animate-spin" />}{' '}
+        </h2>
 
         <div className="mt-3 grid grid-cols-1 gap-5">
           {isLoading &&
+            !isFetched &&
             Array.from({ length: 5 }).map((_, i) => (
               <ThreadSkeleton key={i.toString()} />
             ))}
@@ -47,6 +68,10 @@ const Home = () => {
             <ThreadCard key={thread.id} thread={thread} />
           ))}
         </div>
+
+        {isFetched && !threads?.length && (
+          <div className="mt-3">❌ No threads found</div>
+        )}
       </div>
     </div>
   )

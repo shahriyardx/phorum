@@ -5,6 +5,9 @@ import { TRPCError } from '@trpc/server'
 import { getAiResponse } from '@/lib/ai'
 
 export const threadRouter = createTRPCRouter({
+  topics: publicProcedure.query(async ({ ctx }) => {
+    return await ctx.prisma.category.findMany()
+  }),
   create: protectedProcedure
     .input(ThreadSchema)
     .mutation(async ({ ctx, input }) => {
@@ -16,23 +19,49 @@ export const threadRouter = createTRPCRouter({
         },
       })
     }),
-  allThreads: publicProcedure.query(async ({ ctx }) => {
-    return await ctx.prisma.thread.findMany({
-      include: {
-        Category: true,
-        author: {
-          select: {
-            name: true,
+  allThreads: publicProcedure
+    .input(
+      z.object({
+        query: z.string().nullable(),
+        topic: z.string().nullable(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      console.log(input)
+
+      return await ctx.prisma.thread.findMany({
+        where: {
+          AND: [
+            input.query
+              ? {
+                  title: {
+                    contains: input.query,
+                    mode: 'insensitive',
+                  },
+                }
+              : {},
+            input.topic
+              ? {
+                  categoryId: input.topic,
+                }
+              : {},
+          ],
+        },
+        include: {
+          Category: true,
+          author: {
+            select: {
+              name: true,
+            },
+          },
+          _count: {
+            select: {
+              comments: true,
+            },
           },
         },
-        _count: {
-          select: {
-            comments: true,
-          },
-        },
-      },
-    })
-  }),
+      })
+    }),
   getById: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {

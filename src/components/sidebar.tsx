@@ -1,22 +1,16 @@
 'use client'
 
 import { cn } from '@/lib/utils'
+import { trpc } from '@/trpc/client'
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
-
-export const topics = [
-  { id: '1', name: 'Misc', emoji: '∞' },
-  { id: '2', name: 'Programming', emoji: '👨‍💻' },
-  { id: '3', name: 'Lifestyle', emoji: '💃' },
-  { id: '4', name: 'Food', emoji: '🍔' },
-  { id: '5', name: 'Crypto', emoji: '🔐' },
-  { id: '6', name: 'Artificial Intelligence', emoji: '🧠' },
-]
 
 const Sidebar = () => {
   const params = useSearchParams()
   const activeTopicId = params.get('topic')
   const pathname = usePathname()
+
+  const { data: topics } = trpc.thread.topics.useQuery()
 
   return (
     <aside className="w-72 p-5 bg-zinc-900 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto">
@@ -33,7 +27,7 @@ const Sidebar = () => {
           <span>All</span>
         </Link>
 
-        {topics.map((topic) => (
+        {topics?.map((topic) => (
           <Link
             href={`/?topic=${topic.id}`}
             key={topic.name}
